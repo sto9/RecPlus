@@ -220,18 +220,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800">
+  <div
+    class="min-h-screen bg-slate-50 text-slate-800 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+  >
     <!-- ヘッダー -->
-    <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
+    <header class="sticky top-0 z-20 shrink-0 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
       <div class="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-6">
         <span class="text-2xl font-black tracking-tight text-white">rec<span class="text-violet-400">+</span></span>
       </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
-        <!-- 左カラム: ユーザー + 絞り込み -->
-        <aside class="space-y-4 lg:sticky lg:top-20 lg:self-start">
+    <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:min-h-0 lg:flex-1">
+      <div class="grid grid-cols-1 gap-6 py-6 lg:h-full lg:grid-cols-[360px_1fr] lg:py-0">
+        <!-- 左カラム: ユーザー + 絞り込み (PC では独立スクロール) -->
+        <aside
+          class="space-y-4 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:py-6 lg:pr-2"
+        >
           <!-- ユーザー ID -->
           <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
             <label class="mb-1 block text-sm font-bold text-slate-700">
@@ -271,8 +275,10 @@ onMounted(() => {
           <FilterPanel v-model="filter" :score-enabled="scoreEnabled" @reset="resetFilter" />
         </aside>
 
-        <!-- 右カラム: 結果 -->
-        <section class="space-y-4">
+        <!-- 右カラム: 結果 (PC では独立スクロール) -->
+        <section
+          class="space-y-4 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:py-6 lg:pr-1"
+        >
           <!-- サマリ -->
           <div
             class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200 sm:px-5"
@@ -317,7 +323,7 @@ onMounted(() => {
       </div>
     </main>
 
-    <footer class="mx-auto max-w-7xl px-4 py-8 text-center text-xs text-slate-400 sm:px-6">
+    <footer class="mx-auto w-full max-w-7xl shrink-0 px-4 py-8 text-center text-xs text-slate-400 sm:px-6 lg:py-3">
       データ: chunirec / 譜面保管所 (sdvx.in)。本ツールは非公式です。
     </footer>
   </div>
