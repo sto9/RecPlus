@@ -225,12 +225,12 @@ onMounted(() => {
   >
     <!-- ヘッダー -->
     <header class="sticky top-0 z-20 shrink-0 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
-      <div class="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-6">
+      <div class="mx-auto flex max-w-[1800px] items-center px-4 py-3 sm:px-6">
         <span class="text-2xl font-black tracking-tight text-white">rec<span class="text-violet-400">+</span></span>
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:min-h-0 lg:flex-1">
+    <main class="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:min-h-0 lg:flex-1">
       <div class="grid grid-cols-1 gap-6 py-6 lg:h-full lg:grid-cols-[360px_1fr] lg:py-0">
         <!-- 左カラム: ユーザー + 絞り込み (PC では独立スクロール) -->
         <aside
@@ -323,7 +323,7 @@ onMounted(() => {
       </div>
     </main>
 
-    <footer class="mx-auto w-full max-w-7xl shrink-0 px-4 py-8 text-center text-xs text-slate-400 sm:px-6 lg:py-3">
+    <footer class="mx-auto w-full max-w-[1800px] shrink-0 px-4 py-8 text-center text-xs text-slate-400 sm:px-6 lg:py-3">
       データ: chunirec / 譜面保管所 (sdvx.in)。本ツールは非公式です。
     </footer>
   </div>
