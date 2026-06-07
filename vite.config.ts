@@ -6,4 +6,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   base: './',
+  // GitHub Pages は docs/ をソースに指定できるため出力先を docs にする
+  build: {
+    outDir: 'docs',
+    emptyOutDir: true,
+  },
 })
