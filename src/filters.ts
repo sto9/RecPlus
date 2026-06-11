@@ -43,6 +43,8 @@ export const ACHIEVEMENT_OPTIONS = [
 export type AchievementKey = (typeof ACHIEVEMENT_OPTIONS)[number]['value']
 
 export interface FilterState {
+  // 曲名検索 (部分一致, 空白無視)
+  titleQuery: string
   // レベル / 定数
   useConst: boolean
   levelLower: number
@@ -70,6 +72,7 @@ export interface FilterState {
 
 export function defaultFilterState(): FilterState {
   return {
+    titleQuery: '',
     useConst: false,
     levelLower: 13,
     levelUpper: 15,
@@ -125,7 +128,13 @@ function numOrNull(v: number | null): number | null {
   return Number.isNaN(n) ? null : n
 }
 
+/** 曲名検索用の正規化 (空白除去 + 小文字化) */
+function normalizeTitle(s: string): string {
+  return s.replace(/\s+/g, '').toLowerCase()
+}
+
 export function filterCharts(charts: Chart[], f: FilterState): Chart[] {
+  const titleQuery = normalizeTitle(f.titleQuery)
   const scoreLower = numOrNull(f.scoreLower)
   const scoreUpper = numOrNull(f.scoreUpper)
   const videoLenMin = numOrNull(f.videoLenMin)
@@ -134,6 +143,9 @@ export function filterCharts(charts: Chart[], f: FilterState): Chart[] {
   const constUpper = numOrNull(f.constUpper)
 
   return charts.filter((c) => {
+    // 曲名検索 (部分一致, 空白無視)
+    if (titleQuery && !normalizeTitle(c.title).includes(titleQuery)) return false
+
     // 難易度 (ULTIMA を含むか)
     if (c.diff === 'ULT' && !f.includeUltima) return false
 

@@ -21,6 +21,19 @@ function allGenres(on: boolean) {
 
 <template>
   <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <!-- 曲名検索 -->
+    <div class="border-b border-slate-100 p-4 sm:p-5">
+      <h3 class="mb-3 text-sm font-bold text-slate-700">曲名検索</h3>
+      <div class="relative">
+        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">🔍</span>
+        <input
+          v-model="filter.titleQuery"
+          type="search"
+          class="w-full rounded-lg border border-slate-300 py-2 pr-3 pl-9 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+        />
+      </div>
+    </div>
+
     <!-- レベル / 定数 -->
     <div class="border-b border-slate-100 p-4 sm:p-5">
       <div class="mb-3 flex items-center justify-between">
