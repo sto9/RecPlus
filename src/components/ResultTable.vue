@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Chart, SortDir, SortKey } from '../types'
-import { formatDuration, lampLabel, levelLabel, scoreRank } from '../filters'
+import { calcOverPower, formatDuration, lampLabel, levelLabel, maxOverPower, scoreRank, showOverPower } from '../filters'
 
 const props = defineProps<{
   charts: Chart[]
@@ -18,7 +18,7 @@ const SORT_COLUMNS: { key: SortKey; label: string; align: string }[] = [
   { key: 'const', label: '定数', align: 'text-center' },
   { key: 'genre', label: 'ジャンル', align: 'text-center' },
   { key: 'video', label: '動画長', align: 'text-center' },
-  { key: 'score', label: 'スコア', align: 'text-right' },
+  { key: 'score', label: 'スコア / OP', align: 'text-right' },
   { key: 'lamp', label: 'ランプ', align: 'text-center' },
 ]
 
@@ -117,6 +117,16 @@ function rankClass(rank: string): string {
               </div>
               <div v-if="c.played" class="text-xs" :class="rankClass(scoreRank(c.score))">
                 {{ scoreRank(c.score) }}
+              </div>
+              <div
+                v-if="c.played"
+                class="text-[11px] font-semibold text-emerald-600"
+                title="単曲 OVER POWER / 理論値"
+              >
+                <template v-if="showOverPower(c)">
+                  {{ calcOverPower(c).toFixed(2) }} / {{ maxOverPower(c).toFixed(2) }}
+                </template>
+                <span v-else class="text-slate-300">-</span>
               </div>
             </template>
             <span v-else class="text-xs text-slate-300">—</span>

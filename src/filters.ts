@@ -213,6 +213,63 @@ export function scoreRank(score: number): string {
   return ''
 }
 
+/**
+ * スコアから単曲レーティング値を返す (定数を加算した絶対値)。
+ * 標準的な CHUNITHM レーティングのボーダー間を直線補間する。
+ * OP の S～SSS 帯ではこの値を 5 倍して用いる。
+ */
+function ratingValue(constVal: number, score: number): number {
+  if (score >= 1009000) return constVal + 2.15
+  if (score >= 1007500) return constVal + 2.0 + (score - 1007500) * (0.15 / 1500)
+  if (score >= 1005000) return constVal + 1.5 + (score - 1005000) * (0.5 / 2500)
+  if (score >= 1000000) return constVal + 1.0 + (score - 1000000) * (0.5 / 5000)
+  if (score >= 990000) return constVal + 0.6 + (score - 990000) * (0.4 / 10000)
+  if (score >= 975000) return constVal + 0.0 + (score - 975000) * (0.6 / 15000)
+  // S 未満は S セグメントを線形に延長し、0 で下げ止め
+  return Math.max(0, constVal + (score - 975000) * (0.6 / 15000))
+}
+
+/**
+ * 単曲 OVER POWER 値を計算する。
+ * - AJC (1,010,000 / 理論値): (譜面定数+3)×5
+ * - SSS 超 (1,007,501～): (譜面定数+2)×5 + 補正1 + 補正2
+ * - S～SSS (975,000～1,007,500): レーティング値×5 + 補正1
+ *   補正1 … FC=0.5 / AJ=1.0 (AJC は上記専用式で +1.25 相当)
+ *   補正2 … (スコア-1,007,500)×0.0015 (理論値で最大 3.75)
+ */
+export function calcOverPower(chart: Chart): number {
+  const c = chart.const
+  const score = chart.score
+  // 理論値 (AJC): (定数+2)×5 + 1.25 + 3.75 = (定数+3)×5
+  if (score >= 1010000) return (c + 3) * 5
+
+  // 補正1 (ランプボーナス)
+  const bonus1 = chart.isAlljustice ? 1.0 : chart.isFullcombo ? 0.5 : 0
+
+  // SSS 超
+  if (score > 1007500) {
+    const bonus2 = (score - 1007500) * 0.0015
+    return (c + 2) * 5 + bonus1 + bonus2
+  }
+  // S～SSS (および S 未満)
+  return ratingValue(c, score) * 5 + bonus1
+}
+
+/** 譜面の理論値 (AJC) 時の単曲 OVER POWER = (譜面定数+3)×5 */
+export function maxOverPower(chart: Chart): number {
+  return (chart.const + 3) * 5
+}
+
+/**
+ * 譜面に OP を表示すべきか。
+ * 未プレイ・定数不明・ULTIMA を持つ曲の MASTER では表示しない。
+ */
+export function showOverPower(chart: Chart): boolean {
+  if (!chart.played || chart.isConstUnknown) return false
+  if (chart.diff === 'MAS' && chart.hasUltima) return false
+  return true
+}
+
 /** ランプ (AJC > AJ > FC > -) */
 export function lampLabel(chart: Chart): string {
   if (chart.score >= 1010000) return 'AJC'
