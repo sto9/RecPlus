@@ -8,9 +8,11 @@ import {
 } from './api'
 import type { Chart, SortDir, SortKey, Song, UserRecord } from './types'
 import {
+  ajRate,
   defaultFilterState,
   filterCharts,
   lampLabel,
+  maxRate,
   type FilterState,
 } from './filters'
 import FilterPanel from './components/FilterPanel.vue'
@@ -71,6 +73,29 @@ function sortValue(c: Chart, key: SortKey): string | number {
       return c.score
     case 'lamp':
       return lampRank(c)
+    case 'statMax':
+      return maxRate(c) ?? -1
+    case 'statAj':
+      return ajRate(c) ?? -1
+  }
+}
+
+/** その列に表示できるデータがあるか (無い場合はソート方向に依らず末尾へ送る) */
+function hasSortData(c: Chart, key: SortKey): boolean {
+  switch (key) {
+    case 'video':
+      return c.videoLengthSec != null
+    case 'score':
+    case 'lamp':
+      return c.played
+    case 'statMax':
+      return maxRate(c) != null
+    case 'statAj':
+      return ajRate(c) != null
+    case 'const':
+      return !c.isConstUnknown
+    default:
+      return true
   }
 }
 
@@ -119,6 +144,12 @@ const filtered = computed<Chart[]>(() => {
   const dir = sortDir.value === 'asc' ? 1 : -1
   const key = sortKey.value
   return list.slice().sort((a, b) => {
+    // データの無い譜面は昇順・降順いずれでも末尾へ
+    const ha = hasSortData(a, key)
+    const hb = hasSortData(b, key)
+    if (ha !== hb) return ha ? -1 : 1
+    if (!ha && !hb) return a.title.localeCompare(b.title, 'ja')
+
     const va = sortValue(a, key)
     const vb = sortValue(b, key)
     let cmp: number

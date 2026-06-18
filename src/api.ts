@@ -10,7 +10,7 @@ import type {
 
 // chunirec ベースの全曲取得 API (動画情報込み)
 const ALL_SONGS_URL =
-  'https://script.google.com/macros/s/AKfycbwoMdrHk6pYIlF_QVuDrju2a9YnHOb9nkxs8Zz4fMzYJDhUCL1o_uMJFYxwHYu4zDYc/exec?gameType=chunithm&includeVideos=true'
+  'https://script.google.com/macros/s/AKfycbwoMdrHk6pYIlF_QVuDrju2a9YnHOb9nkxs8Zz4fMzYJDhUCL1o_uMJFYxwHYu4zDYc/exec?gameType=chunithm&includeVideos=true&stat=true'
 
 // chunirec のユーザーデータ取得 (records/showall.json をプロキシ)
 const USER_DATA_BASE_URL =
@@ -116,6 +116,9 @@ export function buildCharts(
         hasUltima,
         sdvxLink: data.sdvxLink,
         videoUrl: data.videoUrl,
+        statPlayCount: data.statPlayCount,
+        statMaxCount: data.statMaxCount,
+        statAjCount: data.statAjCount,
         score: rec ? Number(rec.score) || 0 : 0,
         isFullcombo: rec ? truthy(rec.is_fullcombo) : false,
         isAlljustice: rec ? truthy(rec.is_alljustice) : false,

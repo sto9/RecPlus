@@ -20,6 +20,12 @@ export interface ChartData {
   sdvxLink?: string
   /** 譜面動画(YouTube 等)へのリンク */
   videoUrl?: string
+  /** 統計: プレイ人数 (stat=true 時のみ) */
+  statPlayCount?: number
+  /** 統計: MAX(理論値)達成人数 */
+  statMaxCount?: number
+  /** 統計: AJ 達成人数 */
+  statAjCount?: number
 }
 
 /** 難易度キー。本ツールでは MAS / ULT のみ扱う。 */
@@ -73,6 +79,8 @@ export type SortKey =
   | 'video'
   | 'score'
   | 'lamp'
+  | 'statMax'
+  | 'statAj'
 
 export type SortDir = 'asc' | 'desc'
 
@@ -94,6 +102,10 @@ export interface Chart {
   hasUltima: boolean
   sdvxLink?: string
   videoUrl?: string
+  // 統計 (stat=true 時のみ。未取得は undefined)
+  statPlayCount?: number
+  statMaxCount?: number
+  statAjCount?: number
   // ユーザースコア (未取得・未プレイ時は played=false)
   score: number
   isFullcombo: boolean

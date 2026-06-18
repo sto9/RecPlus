@@ -278,6 +278,24 @@ export function lampLabel(chart: Chart): string {
   return '-'
 }
 
+/**
+ * 達成率 (%) を返す。人数データが無い・プレイ人数 0 の場合は null。
+ */
+export function statRate(count?: number, playCount?: number): number | null {
+  if (count == null || playCount == null || playCount <= 0) return null
+  return (count / playCount) * 100
+}
+
+/** 統計の MAX 達成率 (%)。無ければ null。 */
+export function maxRate(chart: Chart): number | null {
+  return statRate(chart.statMaxCount, chart.statPlayCount)
+}
+
+/** 統計の AJ 達成率 (%)。無ければ null。 */
+export function ajRate(chart: Chart): number | null {
+  return statRate(chart.statAjCount, chart.statPlayCount)
+}
+
 /** 秒を mm:ss へ */
 export function formatDuration(sec?: number): string {
   if (sec == null) return '-'

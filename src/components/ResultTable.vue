@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import type { Chart, SortDir, SortKey } from '../types'
-import { calcOverPower, formatDuration, lampLabel, levelLabel, maxOverPower, scoreRank, showOverPower } from '../filters'
+import {
+  ajRate,
+  calcOverPower,
+  formatDuration,
+  lampLabel,
+  levelLabel,
+  maxOverPower,
+  maxRate,
+  scoreRank,
+  showOverPower,
+} from '../filters'
 
 const props = defineProps<{
   charts: Chart[]
@@ -20,7 +30,17 @@ const SORT_COLUMNS: { key: SortKey; label: string; align: string }[] = [
   { key: 'video', label: '動画長', align: 'text-center' },
   { key: 'score', label: 'スコア / OP', align: 'text-right' },
   { key: 'lamp', label: 'ランプ', align: 'text-center' },
+  { key: 'statMax', label: 'MAX率', align: 'text-right' },
+  { key: 'statAj', label: 'AJ率', align: 'text-right' },
 ]
+
+/** 達成率を小数1桁の % へ。null は '—'。 */
+function fmtRate(r: number | null): string {
+  return r == null ? '—' : `${r.toFixed(1)}%`
+}
+function fmtCount(n?: number): string {
+  return n == null ? '' : n.toLocaleString()
+}
 
 function arrow(key: SortKey): string {
   if (props.sortKey !== key) return '↕'
@@ -139,6 +159,24 @@ function rankClass(rank: string): string {
               {{ scoreEnabled ? lampLabel(c) : '-' }}
             </span>
           </td>
+          <td
+            class="px-2 py-2 text-right tabular-nums"
+            :title="c.statMaxCount != null ? `${fmtCount(c.statMaxCount)} / ${fmtCount(c.statPlayCount)} 人` : ''"
+          >
+            <div class="font-semibold text-amber-600">{{ fmtRate(maxRate(c)) }}</div>
+            <div v-if="c.statMaxCount != null" class="text-[11px] text-slate-400">
+              {{ fmtCount(c.statMaxCount) }}人
+            </div>
+          </td>
+          <td
+            class="px-2 py-2 text-right tabular-nums"
+            :title="c.statAjCount != null ? `${fmtCount(c.statAjCount)} / ${fmtCount(c.statPlayCount)} 人` : ''"
+          >
+            <div class="font-semibold text-yellow-600">{{ fmtRate(ajRate(c)) }}</div>
+            <div v-if="c.statAjCount != null" class="text-[11px] text-slate-400">
+              {{ fmtCount(c.statAjCount) }}人
+            </div>
+          </td>
           <td class="px-2 py-2 text-center">
             <a
               v-if="c.sdvxLink"
@@ -165,7 +203,7 @@ function rankClass(rank: string): string {
           </td>
         </tr>
         <tr v-if="charts.length === 0">
-          <td colspan="10" class="px-4 py-12 text-center text-slate-400">
+          <td colspan="12" class="px-4 py-12 text-center text-slate-400">
             条件に一致する譜面がありません。
           </td>
         </tr>
