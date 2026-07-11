@@ -51,7 +51,8 @@ export interface FilterState {
   levelUpper: number
   constLower: number
   constUpper: number
-  // 難易度
+  // 難易度 (表示する難易度)
+  includeMaster: boolean
   includeUltima: boolean
   // ジャンル
   genres: Record<Genre, boolean>
@@ -66,8 +67,6 @@ export interface FilterState {
   videoLenMax: number | null
   // 未プレイ除外
   excludeUnplayed: boolean
-  // ULTIMA がある曲の MASTER を除外
-  excludeMasterWithUltima: boolean
 }
 
 export function defaultFilterState(): FilterState {
@@ -75,9 +74,10 @@ export function defaultFilterState(): FilterState {
     titleQuery: '',
     useConst: false,
     levelLower: 13,
-    levelUpper: 15,
+    levelUpper: 16,
     constLower: 13.0,
-    constUpper: 15.4,
+    constUpper: 16,
+    includeMaster: true,
     includeUltima: true,
     genres: {
       'POPS&ANIME': true,
@@ -95,7 +95,6 @@ export function defaultFilterState(): FilterState {
     videoLenMin: null,
     videoLenMax: null,
     excludeUnplayed: false,
-    excludeMasterWithUltima: false,
   }
 }
 
@@ -146,15 +145,15 @@ export function filterCharts(charts: Chart[], f: FilterState): Chart[] {
     // 曲名検索 (部分一致, 空白無視)
     if (titleQuery && !normalizeTitle(c.title).includes(titleQuery)) return false
 
-    // 難易度 (ULTIMA を含むか)
+    // 難易度 (表示する難易度)
+    if (c.diff === 'MAS' && !f.includeMaster) return false
     if (c.diff === 'ULT' && !f.includeUltima) return false
 
-    // レベル / 定数
+    // レベル / 定数 (暫定定数の譜面もその数値で絞り込む)
     if (f.useConst) {
-      // 定数不明の譜面は定数指定では除外
-      if (c.isConstUnknown) return false
-      if (constLower !== null && c.const < constLower) return false
-      if (constUpper !== null && c.const > constUpper) return false
+      const cv = c.const || c.level
+      if (constLower !== null && cv < constLower) return false
+      if (constUpper !== null && cv > constUpper) return false
     } else {
       if (c.level < f.levelLower || c.level > f.levelUpper) return false
     }
@@ -180,9 +179,6 @@ export function filterCharts(charts: Chart[], f: FilterState): Chart[] {
 
     // 未プレイ除外
     if (f.excludeUnplayed && !c.played) return false
-
-    // ULTIMA がある曲の MASTER を除外
-    if (f.excludeMasterWithUltima && c.diff === 'MAS' && c.hasUltima) return false
 
     return true
   })

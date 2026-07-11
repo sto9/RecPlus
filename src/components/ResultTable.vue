@@ -122,8 +122,12 @@ function rankClass(rank: string): string {
               {{ c.diff }} {{ levelLabel(c.level) }}
             </span>
           </td>
-          <td class="px-2 py-2 text-center tabular-nums text-slate-600">
-            {{ c.isConstUnknown ? '?' : c.const.toFixed(1) }}
+          <td
+            class="px-2 py-2 text-center tabular-nums"
+            :class="!c.const ? 'text-slate-400' : c.isConstUnknown ? 'italic text-rose-600' : 'text-slate-600'"
+            :title="c.const && c.isConstUnknown ? '譜面定数は未確定です' : ''"
+          >
+            {{ c.const ? c.const.toFixed(1) : '?' }}
           </td>
           <td class="px-2 py-2 text-center text-xs text-slate-500 whitespace-nowrap">
             {{ c.genre }}

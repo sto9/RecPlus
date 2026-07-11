@@ -42,7 +42,8 @@ const sortKey = ref<SortKey>('const')
 const sortDir = ref<SortDir>('desc')
 
 function constVal(c: Chart): number {
-  return c.isConstUnknown ? c.level : c.const || c.level
+  // 暫定値(is_const_unknown)も数値として扱う。const が 0/欠損ならレベルで代替。
+  return c.const || c.level
 }
 function lampRank(c: Chart): number {
   switch (lampLabel(c)) {
@@ -96,8 +97,6 @@ function hasSortData(c: Chart, key: SortKey): boolean {
       return maxRate(c) != null
     case 'statAj':
       return ajRate(c) != null
-    case 'const':
-      return !c.isConstUnknown
     default:
       return true
   }
@@ -115,9 +114,11 @@ function handleSort(key: SortKey) {
 // ----- 永続化 (localStorage に 1 つの JSON として保存) -----
 function saveState() {
   try {
+    // 曲名検索は永続化しない
+    const { titleQuery: _omit, ...persistedFilter } = filter
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ userId: userId.value, filter }),
+      JSON.stringify({ userId: userId.value, filter: persistedFilter }),
     )
   } catch {
     /* ignore */
@@ -130,6 +131,8 @@ function loadState() {
     const saved = JSON.parse(raw)
     if (typeof saved.userId === 'string') userId.value = saved.userId
     if (saved.filter) Object.assign(filter, saved.filter)
+    // 曲名検索は復元しない (常に空で開始)
+    filter.titleQuery = ''
   } catch {
     /* ignore */
   }

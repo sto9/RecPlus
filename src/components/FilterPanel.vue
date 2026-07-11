@@ -97,38 +97,25 @@ function allGenres(on: boolean) {
       </div>
     </div>
 
-    <!-- 難易度 (ULTIMA トグル) -->
+    <!-- 難易度 (MASTER / ULTIMA) -->
     <div class="border-b border-slate-100 p-4 sm:p-5">
       <h3 class="mb-3 text-sm font-bold text-slate-700">難易度</h3>
-      <button
-        type="button"
-        role="switch"
-        :aria-checked="filter.includeUltima"
-        class="flex w-full select-none items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition"
-        :class="
-          filter.includeUltima
-            ? 'border-slate-900 bg-slate-900'
-            : 'border-slate-300 bg-slate-100'
-        "
-        @click="filter.includeUltima = !filter.includeUltima"
-      >
-        <span
-          class="text-sm font-semibold"
-          :class="filter.includeUltima ? 'text-white' : 'text-slate-500'"
+      <div class="flex flex-wrap gap-2">
+        <label
+          class="inline-flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition"
+          :class="filter.includeMaster ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'"
         >
-          ULTIMA を含む
-        </span>
-        <!-- トグルスイッチ -->
-        <span
-          class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition"
-          :class="filter.includeUltima ? 'bg-rose-500' : 'bg-slate-300'"
+          <input type="checkbox" v-model="filter.includeMaster" class="hidden" />
+          MASTER
+        </label>
+        <label
+          class="inline-flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition"
+          :class="filter.includeUltima ? 'bg-slate-900 text-white ring-1 ring-rose-500' : 'bg-slate-100 text-slate-500'"
         >
-          <span
-            class="inline-block size-5 transform rounded-full bg-white shadow transition"
-            :class="filter.includeUltima ? 'translate-x-6' : 'translate-x-1'"
-          />
-        </span>
-      </button>
+          <input type="checkbox" v-model="filter.includeUltima" class="hidden" />
+          ULTIMA
+        </label>
+      </div>
     </div>
 
     <!-- ジャンル -->
@@ -305,16 +292,6 @@ function allGenres(on: boolean) {
               class="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
             />
             未プレイの譜面を除外
-          </label>
-          <label
-            class="flex w-fit cursor-pointer select-none items-center gap-2 text-sm text-slate-600"
-          >
-            <input
-              type="checkbox"
-              v-model="filter.excludeMasterWithUltima"
-              class="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
-            />
-            ULTIMA がある曲の MASTER を除外
           </label>
         </div>
 
