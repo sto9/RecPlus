@@ -27,6 +27,7 @@ const SORT_COLUMNS: { key: SortKey; label: string; align: string }[] = [
   { key: 'diff', label: '難易度', align: 'text-center' },
   { key: 'const', label: '定数', align: 'text-center' },
   { key: 'genre', label: 'ジャンル', align: 'text-center' },
+  { key: 'bpm', label: 'BPM', align: 'text-center' },
   { key: 'video', label: '動画長', align: 'text-center' },
   { key: 'score', label: 'スコア / OP', align: 'text-right' },
   { key: 'lamp', label: 'ランプ', align: 'text-center' },
@@ -128,6 +129,9 @@ function rankClass(rank: string): string {
             {{ c.genre }}
           </td>
           <td class="px-2 py-2 text-center tabular-nums text-slate-600">
+            {{ c.bpm ? c.bpm : '—' }}
+          </td>
+          <td class="px-2 py-2 text-center tabular-nums text-slate-600">
             {{ formatDuration(c.videoLengthSec) }}
           </td>
           <td class="px-2 py-2 text-right tabular-nums">
@@ -203,7 +207,7 @@ function rankClass(rank: string): string {
           </td>
         </tr>
         <tr v-if="charts.length === 0">
-          <td colspan="12" class="px-4 py-12 text-center text-slate-400">
+          <td colspan="13" class="px-4 py-12 text-center text-slate-400">
             条件に一致する譜面がありません。
           </td>
         </tr>

@@ -76,6 +76,7 @@ export type SortKey =
   | 'diff'
   | 'const'
   | 'genre'
+  | 'bpm'
   | 'video'
   | 'score'
   | 'lamp'

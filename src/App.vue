@@ -67,6 +67,8 @@ function sortValue(c: Chart, key: SortKey): string | number {
       return constVal(c)
     case 'genre':
       return c.genre
+    case 'bpm':
+      return c.bpm ?? -1
     case 'video':
       return c.videoLengthSec ?? -1
     case 'score':
@@ -83,6 +85,8 @@ function sortValue(c: Chart, key: SortKey): string | number {
 /** その列に表示できるデータがあるか (無い場合はソート方向に依らず末尾へ送る) */
 function hasSortData(c: Chart, key: SortKey): boolean {
   switch (key) {
+    case 'bpm':
+      return !!c.bpm && c.bpm > 0
     case 'video':
       return c.videoLengthSec != null
     case 'score':
