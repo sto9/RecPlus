@@ -54,6 +54,8 @@ export interface FilterState {
   // 難易度 (表示する難易度)
   includeMaster: boolean
   includeUltima: boolean
+  // ULTIMA がある曲の MASTER を除外
+  excludeMasterWithUltima: boolean
   // ジャンル
   genres: Record<Genre, boolean>
   // 達成済 / 未達成 (ユーザースコア依存)
@@ -79,6 +81,7 @@ export function defaultFilterState(): FilterState {
     constUpper: 16,
     includeMaster: true,
     includeUltima: true,
+    excludeMasterWithUltima: false,
     genres: {
       'POPS&ANIME': true,
       niconico: true,
@@ -148,6 +151,8 @@ export function filterCharts(charts: Chart[], f: FilterState): Chart[] {
     // 難易度 (表示する難易度)
     if (c.diff === 'MAS' && !f.includeMaster) return false
     if (c.diff === 'ULT' && !f.includeUltima) return false
+    // ULTIMA がある曲の MASTER を除外
+    if (f.excludeMasterWithUltima && c.diff === 'MAS' && c.hasUltima) return false
 
     // レベル / 定数 (暫定定数の譜面もその数値で絞り込む)
     if (f.useConst) {

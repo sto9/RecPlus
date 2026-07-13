@@ -116,6 +116,16 @@ function allGenres(on: boolean) {
           ULTIMA
         </label>
       </div>
+      <label
+        class="mt-3 flex w-fit cursor-pointer select-none items-center gap-2 text-sm text-slate-600"
+      >
+        <input
+          type="checkbox"
+          v-model="filter.excludeMasterWithUltima"
+          class="size-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+        />
+        ULTIMA がある曲の MASTER を除外
+      </label>
     </div>
 
     <!-- ジャンル -->
