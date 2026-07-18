@@ -160,23 +160,23 @@ function rankClass(rank: string): string {
                 <!-- MASTER と ULTIMA が両方ある曲: 3 ブロック (OP値 / 理論値) -->
                 <template v-if="c.hasMaster && c.hasUltima">
                   <div class="flex items-center justify-end gap-1">
-                    <!-- ブロック1: OP 値 (低いほうに打消し線) -->
+                    <!-- ブロック1: OP 値 (低いほうに打消し線・薄い文字) -->
                     <div class="flex flex-col items-end">
-                      <span class="text-violet-600" :class="{ 'line-through': isLower(c.masterOp, c.ultimaOp) }">
+                      <span class="text-violet-600" :class="isLower(c.masterOp, c.ultimaOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.masterOp) }}
                       </span>
-                      <span class="text-slate-900" :class="{ 'line-through': isLower(c.ultimaOp, c.masterOp) }">
+                      <span class="text-slate-900" :class="isLower(c.ultimaOp, c.masterOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.ultimaOp) }}
                       </span>
                     </div>
                     <!-- ブロック2: / (上下中央・縦に引き延ばす) -->
                     <span class="inline-block scale-y-[2.2] text-slate-400 leading-none">/</span>
-                    <!-- ブロック3: 理論値 (低いほうに打消し線) -->
+                    <!-- ブロック3: 理論値 (低いほうに打消し線・薄い文字) -->
                     <div class="flex flex-col items-start">
-                      <span class="text-violet-600" :class="{ 'line-through': isLower(c.masterTheoreticalOp, c.ultimaTheoreticalOp) }">
+                      <span class="text-violet-600" :class="isLower(c.masterTheoreticalOp, c.ultimaTheoreticalOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.masterTheoreticalOp) }}
                       </span>
-                      <span class="text-slate-900" :class="{ 'line-through': isLower(c.ultimaTheoreticalOp, c.masterTheoreticalOp) }">
+                      <span class="text-slate-900" :class="isLower(c.ultimaTheoreticalOp, c.masterTheoreticalOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.ultimaTheoreticalOp) }}
                       </span>
                     </div>
