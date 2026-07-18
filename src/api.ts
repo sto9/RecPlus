@@ -7,6 +7,7 @@ import type {
   TargetDiff,
   UserRecord,
 } from './types'
+import { calcOverPower, maxOverPower } from './filters'
 
 // chunirec ベースの全曲取得 API (動画情報込み)
 const ALL_SONGS_URL =
@@ -95,13 +96,17 @@ export function buildCharts(
   const charts: Chart[] = []
   for (const song of songs) {
     const hasUltima = !!song.data.ULT
+    const hasMaster = !!song.data.MAS
+
+    // まず曲内の MAS/ULT の Chart を組み立てる
+    const built: Partial<Record<TargetDiff, Chart>> = {}
     for (const diff of TARGET_DIFFS) {
       const data = song.data[diff]
       if (!data) continue
 
       const rec = recordMap.get(`${song.meta.id}__${diff}`)
       const played = !!rec
-      charts.push({
+      built[diff] = {
         id: song.meta.id,
         title: song.meta.title,
         genre: song.meta.genre,
@@ -113,6 +118,7 @@ export function buildCharts(
         level: data.level,
         const: data.const,
         isConstUnknown: !!data.is_const_unknown,
+        hasMaster,
         hasUltima,
         sdvxLink: data.sdvxLink,
         videoUrl: data.videoUrl,
@@ -123,7 +129,31 @@ export function buildCharts(
         isFullcombo: rec ? truthy(rec.is_fullcombo) : false,
         isAlljustice: rec ? truthy(rec.is_alljustice) : false,
         played,
-      })
+        masterOp: null,
+        ultimaOp: null,
+        masterTheoreticalOp: null,
+        ultimaTheoreticalOp: null,
+      }
+    }
+
+    // 曲横断の OP を計算 (プレイ済みかつ定数が入っている譜面。暫定定数も対象)
+    const opOf = (ch?: Chart): number | null =>
+      ch && ch.played && ch.const > 0 ? calcOverPower(ch) : null
+    const theoOf = (ch?: Chart): number | null =>
+      ch && ch.const > 0 ? maxOverPower(ch) : null
+    const masterOp = opOf(built.MAS)
+    const ultimaOp = opOf(built.ULT)
+    const masterTheoreticalOp = theoOf(built.MAS)
+    const ultimaTheoreticalOp = theoOf(built.ULT)
+
+    for (const diff of TARGET_DIFFS) {
+      const ch = built[diff]
+      if (!ch) continue
+      ch.masterOp = masterOp
+      ch.ultimaOp = ultimaOp
+      ch.masterTheoreticalOp = masterTheoreticalOp
+      ch.ultimaTheoreticalOp = ultimaTheoreticalOp
+      charts.push(ch)
     }
   }
   return charts

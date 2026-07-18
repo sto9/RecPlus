@@ -2,15 +2,21 @@
 import type { Chart, SortDir, SortKey } from '../types'
 import {
   ajRate,
-  calcOverPower,
   formatDuration,
   lampLabel,
   levelLabel,
-  maxOverPower,
   maxRate,
   scoreRank,
-  showOverPower,
 } from '../filters'
+
+/** OP 値を小数2桁へ。null は '-'。 */
+function opStr(op: number | null): string {
+  return op == null ? '-' : op.toFixed(2)
+}
+/** a が b より低いか (両方数値のときのみ true。同率・null は false)。 */
+function isLower(a: number | null, b: number | null): boolean {
+  return a != null && b != null && a < b
+}
 
 const props = defineProps<{
   charts: Chart[]
@@ -147,14 +153,47 @@ function rankClass(rank: string): string {
                 {{ scoreRank(c.score) }}
               </div>
               <div
-                v-if="c.played"
-                class="text-[11px] font-semibold text-emerald-600"
+                v-if="c.masterOp != null || c.ultimaOp != null"
+                class="text-[11px] font-semibold"
                 title="単曲 OVER POWER / 理論値"
               >
-                <template v-if="showOverPower(c)">
-                  {{ calcOverPower(c).toFixed(2) }} / {{ maxOverPower(c).toFixed(2) }}
+                <!-- MASTER と ULTIMA が両方ある曲: 3 ブロック (OP値 / 理論値) -->
+                <template v-if="c.hasMaster && c.hasUltima">
+                  <div class="flex items-center justify-end gap-1">
+                    <!-- ブロック1: OP 値 (低いほうに打消し線) -->
+                    <div class="flex flex-col items-end">
+                      <span class="text-violet-600" :class="{ 'line-through': isLower(c.masterOp, c.ultimaOp) }">
+                        {{ opStr(c.masterOp) }}
+                      </span>
+                      <span class="text-slate-900" :class="{ 'line-through': isLower(c.ultimaOp, c.masterOp) }">
+                        {{ opStr(c.ultimaOp) }}
+                      </span>
+                    </div>
+                    <!-- ブロック2: / (上下中央・縦に引き延ばす) -->
+                    <span class="inline-block scale-y-[2.2] text-slate-400 leading-none">/</span>
+                    <!-- ブロック3: 理論値 (低いほうに打消し線) -->
+                    <div class="flex flex-col items-start">
+                      <span class="text-violet-600" :class="{ 'line-through': isLower(c.masterTheoreticalOp, c.ultimaTheoreticalOp) }">
+                        {{ opStr(c.masterTheoreticalOp) }}
+                      </span>
+                      <span class="text-slate-900" :class="{ 'line-through': isLower(c.ultimaTheoreticalOp, c.masterTheoreticalOp) }">
+                        {{ opStr(c.ultimaTheoreticalOp) }}
+                      </span>
+                    </div>
+                  </div>
                 </template>
-                <span v-else class="text-slate-300">-</span>
+                <!-- ULTIMA のみ (念のため) -->
+                <template v-else-if="c.hasUltima">
+                  <div class="text-slate-900">
+                    {{ opStr(c.ultimaOp) }} / {{ opStr(c.ultimaTheoreticalOp) }}
+                  </div>
+                </template>
+                <!-- MASTER のみ -->
+                <template v-else>
+                  <div class="text-violet-600">
+                    {{ opStr(c.masterOp) }} / {{ opStr(c.masterTheoreticalOp) }}
+                  </div>
+                </template>
               </div>
             </template>
             <span v-else class="text-xs text-slate-300">—</span>

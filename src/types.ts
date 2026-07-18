@@ -99,6 +99,8 @@ export interface Chart {
   level: number
   const: number
   isConstUnknown: boolean
+  /** 同じ曲に MASTER 譜面が存在するか */
+  hasMaster: boolean
   /** 同じ曲に ULTIMA 譜面が存在するか */
   hasUltima: boolean
   sdvxLink?: string
@@ -112,4 +114,10 @@ export interface Chart {
   isFullcombo: boolean
   isAlljustice: boolean
   played: boolean
+  // OP 表示用 (同一曲の MAS/ULT を横断した値。未プレイ・定数なしは null)
+  masterOp: number | null
+  ultimaOp: number | null
+  // 各難易度の理論値 OP (定数が入っていれば算出、無ければ null)
+  masterTheoreticalOp: number | null
+  ultimaTheoreticalOp: number | null
 }
