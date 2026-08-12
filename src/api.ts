@@ -11,7 +11,7 @@ import { calcOverPower, maxOverPower } from './filters'
 
 // chunirec ベースの全曲取得 API (動画情報込み)
 const ALL_SONGS_URL =
-  'https://script.google.com/macros/s/AKfycbwoMdrHk6pYIlF_QVuDrju2a9YnHOb9nkxs8Zz4fMzYJDhUCL1o_uMJFYxwHYu4zDYc/exec?gameType=chunithm&includeVideos=true&stat=true'
+  'https://script.google.com/macros/s/AKfycbz5u5PXUo5o2OHjgumeh0YlSACW-dPBZazyfvoMhT4u6yIivSzUApb2TT99njJZf0sf/exec?gameType=chunithm&includeVideos=true&stat=true'
 
 // chunirec のユーザーデータ取得 (records/showall.json をプロキシ)
 const USER_DATA_BASE_URL =
