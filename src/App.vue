@@ -299,6 +299,7 @@ onMounted(() => {
 <template>
   <div
     class="min-h-screen bg-slate-50 text-slate-800 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+    :class="recordSource === 'support' && 'theme-support'"
   >
     <!-- ヘッダー -->
     <header class="sticky top-0 z-20 shrink-0 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
@@ -335,7 +336,7 @@ onMounted(() => {
                   type="button"
                   class="cursor-pointer rounded-md px-2.5 py-1 transition"
                   :class="recordSource === 'support'
-                    ? 'bg-white text-support shadow-sm ring-1 ring-slate-200'
+                    ? 'bg-white text-violet-600 shadow-sm ring-1 ring-slate-200'
                     : 'text-slate-400 hover:text-slate-600'"
                   @click="setRecordSource('support')"
                 >
@@ -357,10 +358,7 @@ onMounted(() => {
               />
               <button
                 type="button"
-                class="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
-                :class="recordSource === 'support'
-                  ? 'bg-support hover:bg-support-dark'
-                  : 'bg-violet-600 hover:bg-violet-700'"
+                class="shrink-0 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-50"
                 :disabled="loadingUser"
                 @click="loadUser"
               >

@@ -123,7 +123,7 @@ function rankClass(rank: string): string {
           <td class="px-2 py-2 text-center">
             <span
               class="inline-block rounded px-2 py-0.5 text-xs font-bold text-white"
-              :class="c.diff === 'ULT' ? 'bg-slate-900 ring-1 ring-rose-500' : 'bg-violet-600'"
+              :class="c.diff === 'ULT' ? 'bg-slate-900 ring-1 ring-rose-500' : 'bg-master'"
             >
               {{ c.diff }} {{ levelLabel(c.level) }}
             </span>
@@ -162,7 +162,7 @@ function rankClass(rank: string): string {
                   <div class="flex items-center justify-end gap-1">
                     <!-- ブロック1: OP 値 (低いほうに打消し線・薄い文字) -->
                     <div class="flex flex-col items-end">
-                      <span class="text-violet-600" :class="isLower(c.masterOp, c.ultimaOp) ? 'line-through opacity-40' : ''">
+                      <span class="text-master" :class="isLower(c.masterOp, c.ultimaOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.masterOp) }}
                       </span>
                       <span class="text-slate-900" :class="isLower(c.ultimaOp, c.masterOp) ? 'line-through opacity-40' : ''">
@@ -173,7 +173,7 @@ function rankClass(rank: string): string {
                     <span class="inline-block scale-y-[2.2] text-slate-400 leading-none">/</span>
                     <!-- ブロック3: 理論値 (低いほうに打消し線・薄い文字) -->
                     <div class="flex flex-col items-start">
-                      <span class="text-violet-600" :class="isLower(c.masterTheoreticalOp, c.ultimaTheoreticalOp) ? 'line-through opacity-40' : ''">
+                      <span class="text-master" :class="isLower(c.masterTheoreticalOp, c.ultimaTheoreticalOp) ? 'line-through opacity-40' : ''">
                         {{ opStr(c.masterTheoreticalOp) }}
                       </span>
                       <span class="text-slate-900" :class="isLower(c.ultimaTheoreticalOp, c.masterTheoreticalOp) ? 'line-through opacity-40' : ''">
@@ -190,7 +190,7 @@ function rankClass(rank: string): string {
                 </template>
                 <!-- MASTER のみ -->
                 <template v-else>
-                  <div class="text-violet-600">
+                  <div class="text-master">
                     {{ opStr(c.masterOp) }} / {{ opStr(c.masterTheoreticalOp) }}
                   </div>
                 </template>

@@ -1,9 +1,19 @@
 @import 'tailwindcss';
 
 @theme {
-  /* chunisupport のテーマカラー (support モード選択時に使用) */
-  --color-support: lab(59.0978% -58.6621 41.2579);
-  --color-support-dark: lab(52% -58.6621 41.2579);
+  /* MASTER 難易度を意味する紫 (= 既定の violet-600)。
+     support テーマの色替えの影響を受けないよう専用色として固定する */
+  --color-master: oklch(54.1% 0.281 293.009);
+}
+
+/* chunisupport 選択時 (App.vue でルートに付与): アクセントの紫を緑に置き換える。
+   基準色は lab(59.0978% -58.6621 41.2579) で、明度のみ変えて各シェードを作る */
+.theme-support {
+  --color-violet-50: lab(96% -20 13);
+  --color-violet-400: lab(73% -55 38);
+  --color-violet-500: lab(66% -58.6621 41.2579);
+  --color-violet-600: lab(59.0978% -58.6621 41.2579);
+  --color-violet-700: lab(52% -58.6621 41.2579);
 }
 
 :root {

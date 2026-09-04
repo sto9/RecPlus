@@ -103,7 +103,7 @@ function allGenres(on: boolean) {
       <div class="flex flex-wrap gap-2">
         <label
           class="inline-flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition"
-          :class="filter.includeMaster ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'"
+          :class="filter.includeMaster ? 'bg-master text-white' : 'bg-slate-100 text-slate-500'"
         >
           <input type="checkbox" v-model="filter.includeMaster" class="hidden" />
           MASTER
