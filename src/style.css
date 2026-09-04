@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+@theme {
+  /* chunisupport のテーマカラー (support モード選択時に使用) */
+  --color-support: lab(59.0978% -58.6621 41.2579);
+  --color-support-dark: lab(52% -58.6621 41.2579);
+}
+
 :root {
   color-scheme: light;
 }

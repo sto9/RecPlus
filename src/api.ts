@@ -19,6 +19,9 @@ const USER_DATA_BASE_URL =
 
 const TARGET_DIFFS: TargetDiff[] = ['MAS', 'ULT']
 
+// レコードの取得元。'rec' = chunirec (既定)、'support' = chunisupport (proxy の apimode=support)
+export type RecordSource = 'rec' | 'support'
+
 /** 全曲データを取得する。 */
 export async function fetchAllSongs(): Promise<Song[]> {
   const res = await fetch(ALL_SONGS_URL)
@@ -38,8 +41,13 @@ export class UserDataError extends Error {}
  * ユーザーの譜面ごとのプレイ記録 (showall) を取得する。
  * proxy が profile を返した等で records が無い場合は UserDataError を投げる。
  */
-export async function fetchUserRecords(userName: string): Promise<UserRecord[]> {
-  const url = `${USER_DATA_BASE_URL}?user_name=${encodeURIComponent(userName)}`
+export async function fetchUserRecords(
+  userName: string,
+  source: RecordSource = 'rec',
+): Promise<UserRecord[]> {
+  const params = new URLSearchParams({ user_name: userName })
+  if (source === 'support') params.set('apimode', 'support')
+  const url = `${USER_DATA_BASE_URL}?${params.toString()}`
   const res = await fetch(url)
   if (!res.ok) {
     throw new UserDataError(`ユーザーデータの取得に失敗しました (HTTP ${res.status})`)

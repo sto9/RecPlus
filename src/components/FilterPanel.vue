@@ -169,28 +169,13 @@ function allGenres(on: boolean) {
     <!-- 詳細フィルタ -->
     <div class="p-4 sm:p-5">
       <div class="mb-1 flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <button
-            type="button"
-            class="text-sm font-bold text-slate-700"
-            @click="advancedOpen = !advancedOpen"
-          >
-            詳細フィルタ
-          </button>
-          <!-- ? アイコン (ホバーで説明) -->
-          <span class="group relative inline-flex">
-            <span
-              class="flex size-4 cursor-help items-center justify-center rounded-full bg-slate-300 text-[10px] font-bold text-white"
-            >
-              ?
-            </span>
-            <span
-              class="pointer-events-none absolute left-1/2 top-6 z-10 w-60 -translate-x-1/2 rounded-lg bg-slate-800 px-3 py-2 text-xs leading-relaxed text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100"
-            >
-              ユーザー ID を入力してスコアを取得すると、達成状況・スコア・未プレイ除外での絞り込みが有効になります。
-            </span>
-          </span>
-        </div>
+        <button
+          type="button"
+          class="text-sm font-bold text-slate-700"
+          @click="advancedOpen = !advancedOpen"
+        >
+          詳細フィルタ
+        </button>
         <button
           type="button"
           class="text-slate-400 transition"

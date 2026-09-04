@@ -5,6 +5,7 @@ import {
   fetchAllSongs,
   fetchUserRecords,
   UserDataError,
+  type RecordSource,
 } from './api'
 import type { Chart, SortDir, SortKey, Song, UserRecord } from './types'
 import {
@@ -29,7 +30,18 @@ const userRecords = ref<UserRecord[] | null>(null)
 const loadingSongs = ref(true)
 const songsError = ref('')
 
-const userId = ref('')
+// レコード取得元 (rec = chunirec / support = chunisupport)。ユーザー ID は取得元ごとに保持する。
+const recordSource = ref<RecordSource>('rec')
+const userIdBySource = reactive<Record<RecordSource, string>>({
+  rec: '',
+  support: '',
+})
+const userId = computed({
+  get: () => userIdBySource[recordSource.value],
+  set: (v: string) => {
+    userIdBySource[recordSource.value] = v
+  },
+})
 const loadingUser = ref(false)
 const userError = ref('')
 const userInfo = ref('') // 取得成功時のメッセージ
@@ -118,7 +130,11 @@ function saveState() {
     const { titleQuery: _omit, ...persistedFilter } = filter
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ userId: userId.value, filter: persistedFilter }),
+      JSON.stringify({
+        recordSource: recordSource.value,
+        userIds: { ...userIdBySource },
+        filter: persistedFilter,
+      }),
     )
   } catch {
     /* ignore */
@@ -129,7 +145,18 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return
     const saved = JSON.parse(raw)
-    if (typeof saved.userId === 'string') userId.value = saved.userId
+    if (saved.recordSource === 'rec' || saved.recordSource === 'support') {
+      recordSource.value = saved.recordSource
+    }
+    // 旧形式: userId (chunirec のみ) を rec 側の ID として引き継ぐ
+    if (typeof saved.userId === 'string') userIdBySource.rec = saved.userId
+    if (saved.userIds) {
+      for (const src of ['rec', 'support'] as const) {
+        if (typeof saved.userIds[src] === 'string') {
+          userIdBySource[src] = saved.userIds[src]
+        }
+      }
+    }
     if (saved.filter) Object.assign(filter, saved.filter)
     // 曲名検索は復元しない (常に空で開始)
     filter.titleQuery = ''
@@ -218,7 +245,7 @@ async function loadUser() {
   }
   loadingUser.value = true
   try {
-    const records = await fetchUserRecords(name)
+    const records = await fetchUserRecords(name, recordSource.value)
     userRecords.value = records
     userInfo.value = `${records.length} 件のプレイ記録を読み込みました`
     page.value = 1
@@ -234,6 +261,18 @@ async function loadUser() {
   } finally {
     loadingUser.value = false
   }
+}
+
+function setRecordSource(source: RecordSource) {
+  if (recordSource.value === source) return
+  recordSource.value = source
+  // 取得済みレコードは切り替え前の取得元のものなので破棄する
+  userRecords.value = null
+  userError.value = ''
+  userInfo.value = ''
+  saveState()
+  // 切り替え先に保存済みの ID があればそのまま再取得する
+  if (userId.value.trim()) loadUser()
 }
 
 function clearUser() {
@@ -276,9 +315,34 @@ onMounted(() => {
         >
           <!-- ユーザー ID -->
           <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
-            <label class="mb-1 block text-sm font-bold text-slate-700">
-              chunirec ユーザー ID
-            </label>
+            <div class="mb-1 flex items-center justify-between gap-2">
+              <label class="block text-sm font-bold text-slate-700">
+                {{ recordSource === 'rec' ? 'chunirec' : 'chunisupport' }} ユーザー ID
+              </label>
+              <!-- レコード取得元トグル -->
+              <div class="flex shrink-0 rounded-lg bg-slate-100 p-0.5 text-xs font-semibold" role="group" aria-label="レコード取得元">
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-md px-2.5 py-1 transition"
+                  :class="recordSource === 'rec'
+                    ? 'bg-white text-violet-600 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-400 hover:text-slate-600'"
+                  @click="setRecordSource('rec')"
+                >
+                  rec
+                </button>
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-md px-2.5 py-1 transition"
+                  :class="recordSource === 'support'
+                    ? 'bg-white text-support shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-400 hover:text-slate-600'"
+                  @click="setRecordSource('support')"
+                >
+                  support
+                </button>
+              </div>
+            </div>
             <p class="mb-3 text-xs text-slate-400">
               入力するとスコア・達成状況を反映します（任意）。
             </p>
@@ -293,7 +357,10 @@ onMounted(() => {
               />
               <button
                 type="button"
-                class="shrink-0 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-50"
+                class="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+                :class="recordSource === 'support'
+                  ? 'bg-support hover:bg-support-dark'
+                  : 'bg-violet-600 hover:bg-violet-700'"
                 :disabled="loadingUser"
                 @click="loadUser"
               >
