@@ -50,6 +50,18 @@ const filter = reactive<FilterState>(defaultFilterState())
 const page = ref(1)
 
 // ----- ソート -----
+const SORT_KEYS: SortKey[] = [
+  'title',
+  'diff',
+  'const',
+  'genre',
+  'bpm',
+  'video',
+  'score',
+  'lamp',
+  'statMax',
+  'statAj',
+]
 const sortKey = ref<SortKey>('const')
 const sortDir = ref<SortDir>('desc')
 
@@ -134,6 +146,7 @@ function saveState() {
         recordSource: recordSource.value,
         userIds: { ...userIdBySource },
         filter: persistedFilter,
+        sort: { key: sortKey.value, dir: sortDir.value },
       }),
     )
   } catch {
@@ -158,6 +171,12 @@ function loadState() {
       }
     }
     if (saved.filter) Object.assign(filter, saved.filter)
+    if (saved.sort) {
+      if (SORT_KEYS.includes(saved.sort.key)) sortKey.value = saved.sort.key
+      if (saved.sort.dir === 'asc' || saved.sort.dir === 'desc') {
+        sortDir.value = saved.sort.dir
+      }
+    }
     // 曲名検索は復元しない (常に空で開始)
     filter.titleQuery = ''
   } catch {
@@ -219,6 +238,7 @@ watch(
   },
   { deep: true },
 )
+watch([sortKey, sortDir], saveState)
 
 // ----- アクション -----
 async function loadSongs() {
