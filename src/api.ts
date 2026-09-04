@@ -93,11 +93,15 @@ export function buildCharts(
   songs: Song[],
   userRecords: UserRecord[] | null,
 ): Chart[] {
-  // id + diff -> record の索引
+  // id + diff -> record の索引。
+  // chunisupport の id は chunirec と別体系なので、曲名 + diff でも索引を作り
+  // id で見つからない場合のフォールバックに使う (現データでは曲名はユニーク)。
   const recordMap = new Map<string, UserRecord>()
+  const titleMap = new Map<string, UserRecord>()
   if (userRecords) {
     for (const r of userRecords) {
       recordMap.set(`${r.id}__${r.diff}`, r)
+      if (r.title) titleMap.set(`${r.title}__${r.diff}`, r)
     }
   }
 
@@ -112,7 +116,9 @@ export function buildCharts(
       const data = song.data[diff]
       if (!data) continue
 
-      const rec = recordMap.get(`${song.meta.id}__${diff}`)
+      const rec =
+        recordMap.get(`${song.meta.id}__${diff}`) ??
+        titleMap.get(`${song.meta.title}__${diff}`)
       const played = !!rec
       built[diff] = {
         id: song.meta.id,

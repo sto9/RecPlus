@@ -46,6 +46,7 @@ export interface AllSongsResponse {
 export interface UserRecord {
   id: string
   diff: string
+  title?: string
   score: number
   is_clear?: boolean | number
   is_fullcombo?: boolean | number
