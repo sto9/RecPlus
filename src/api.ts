@@ -1,81 +1,133 @@
 import type {
   AllSongsResponse,
+  ApiError,
   Chart,
-  ProxyError,
   ShowallResponse,
   Song,
   TargetDiff,
   UserRecord,
+  VideosJson,
 } from './types'
 import { calcOverPower, maxOverPower } from './filters'
+import { addStatsCsv, mergeSongData, type StatsMap } from './musicData'
 
-// chunirec ベースの全曲取得 API (動画情報込み)
-const ALL_SONGS_URL =
-  'https://script.google.com/macros/s/AKfycbz5u5PXUo5o2OHjgumeh0YlSACW-dPBZazyfvoMhT4u6yIivSzUApb2TT99njJZf0sf/exec?gameType=chunithm&includeVideos=true&stat=true'
-
-// chunirec のユーザーデータ取得 (records/showall.json をプロキシ)
-const USER_DATA_BASE_URL =
-  'https://script.google.com/macros/s/AKfycbymXozLW1AlhIGTm8Co1BIvc0t1bArK9vppmTlF1r-OTkItibwsYbYrfoEsZPMA-i6HMw/exec'
+// nurunchu.com API (https://nurunchu.com/docs/api/)
+const API_BASE = 'https://nurunchu.com/api/v1'
+// 全曲データ (chunirec ベース)
+const SONGS_URL = `${API_BASE}/otoge-music/chunithm`
+// 譜面動画情報 (ChuniVideoAppender の出力)
+const VIDEOS_URL = `${API_BASE}/otoge-music/files/musics/chunithm-videos.json`
+// 達成人数の統計 (chunirec の CSV)
+const STATS_URLS: Record<TargetDiff, string> = {
+  MAS: `${API_BASE}/otoge-music/files/stats/records_stat_mas_num.csv`,
+  ULT: `${API_BASE}/otoge-music/files/stats/records_stat_ult_num.csv`,
+}
+// ユーザーデータ (chunirec / chunisupport のプロキシ)
+const USER_DATA_URL = `${API_BASE}/chunithm-userdata-proxy`
 
 const TARGET_DIFFS: TargetDiff[] = ['MAS', 'ULT']
 
-// レコードの取得元。'rec' = chunirec (既定)、'support' = chunisupport (proxy の apimode=support)
+// レコードの取得元。'rec' = chunirec (既定)、'support' = chunisupport
 export type RecordSource = 'rec' | 'support'
 
-/** 全曲データを取得する。 */
-export async function fetchAllSongs(): Promise<Song[]> {
-  const res = await fetch(ALL_SONGS_URL)
-  if (!res.ok) {
-    throw new Error(`全曲データの取得に失敗しました (HTTP ${res.status})`)
+/**
+ * 任意ファイルを取得する。未登録 (404) やネットワークエラーは null にして、全曲データの表示自体は止めない。
+ */
+async function fetchOptional(url: string): Promise<Response | null> {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) {
+      if (res.status !== 404) console.warn(`${url}: HTTP ${res.status}`)
+      return null
+    }
+    return res
+  } catch (e) {
+    console.warn(`${url}: ${e instanceof Error ? e.message : String(e)}`)
+    return null
   }
-  const json: AllSongsResponse = await res.json()
+}
+
+/** 全曲データを取得し、動画情報と統計をマージして返す。 */
+export async function fetchAllSongs(): Promise<Song[]> {
+  const [songsRes, videosRes, masRes, ultRes] = await Promise.all([
+    fetch(SONGS_URL),
+    fetchOptional(VIDEOS_URL),
+    fetchOptional(STATS_URLS.MAS),
+    fetchOptional(STATS_URLS.ULT),
+  ])
+  if (!songsRes.ok) {
+    throw new Error(`全曲データの取得に失敗しました (HTTP ${songsRes.status})`)
+  }
+  const json: AllSongsResponse = await songsRes.json()
   if (!json || !Array.isArray(json.songs)) {
     throw new Error('全曲データの形式が不正です')
   }
-  return json.songs
+
+  let videos: VideosJson['videos'] | null = null
+  if (videosRes) {
+    try {
+      const parsed: VideosJson = await videosRes.json()
+      if (parsed && typeof parsed.videos === 'object') videos = parsed.videos
+    } catch (e) {
+      console.warn('動画情報の解析に失敗しました', e)
+    }
+  }
+
+  let stats: StatsMap | null = null
+  for (const [diff, res] of [
+    ['MAS', masRes],
+    ['ULT', ultRes],
+  ] as const) {
+    if (!res) continue
+    try {
+      stats = addStatsCsv(stats ?? new Map(), await res.text(), diff)
+    } catch (e) {
+      console.warn(`統計 (${diff}) の解析に失敗しました`, e)
+    }
+  }
+
+  return mergeSongData(json.songs, videos, stats)
 }
 
 export class UserDataError extends Error {}
 
 /**
  * ユーザーの譜面ごとのプレイ記録 (showall) を取得する。
- * proxy が profile を返した等で records が無い場合は UserDataError を投げる。
+ * API がエラー (4xx/5xx) を返した場合や records が無い場合は UserDataError を投げる。
  */
 export async function fetchUserRecords(
   userName: string,
   source: RecordSource = 'rec',
 ): Promise<UserRecord[]> {
-  const params = new URLSearchParams({ user_name: userName })
-  if (source === 'support') params.set('apimode', 'support')
-  const url = `${USER_DATA_BASE_URL}?${params.toString()}`
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new UserDataError(`ユーザーデータの取得に失敗しました (HTTP ${res.status})`)
+  const params = new URLSearchParams({ user_name: userName, source })
+  let res: Response
+  try {
+    res = await fetch(`${USER_DATA_URL}?${params.toString()}`)
+  } catch {
+    throw new UserDataError('ユーザーデータの取得に失敗しました (ネットワークエラー)')
   }
-  const json: ShowallResponse | ProxyError = await res.json()
+  const json: ShowallResponse | ApiError | null = await res.json().catch(() => null)
 
-  if ('success' in json && json.success === false) {
-    const err = json as ProxyError
-    if (err.upstreamStatus === 404) {
+  if (!res.ok) {
+    const err = (json ?? {}) as ApiError
+    const status = err.upstreamStatus ?? res.status
+    if (status === 404) {
       throw new UserDataError('該当するユーザー ID が見つかりませんでした。')
     }
-    if (err.upstreamStatus === 403) {
+    if (status === 403) {
       throw new UserDataError(
         'このユーザーのデータは非公開、またはアクセスが許可されていません。',
       )
     }
     throw new UserDataError(
-      `ユーザーデータの取得に失敗しました${
-        err.upstreamStatus ? ` (upstream ${err.upstreamStatus})` : ''
-      }`,
+      `ユーザーデータの取得に失敗しました (HTTP ${res.status}${
+        err.upstreamStatus ? ` / upstream ${err.upstreamStatus}` : ''
+      })`,
     )
   }
 
-  if (!('records' in json) || !Array.isArray((json as ShowallResponse).records)) {
-    // proxy が showall ではなく profile を返している等
-    throw new UserDataError(
-      '譜面ごとのスコアを取得できませんでした。proxy が showall.json を返すよう設定されているか確認してください。',
-    )
+  if (!json || !('records' in json) || !Array.isArray((json as ShowallResponse).records)) {
+    throw new UserDataError('譜面ごとのスコアを取得できませんでした。')
   }
 
   return (json as ShowallResponse).records

@@ -20,12 +20,17 @@ export interface ChartData {
   sdvxLink?: string
   /** 譜面動画(YouTube 等)へのリンク */
   videoUrl?: string
-  /** 統計: プレイ人数 (stat=true 時のみ) */
+  /** 統計: プレイ人数 (統計 CSV がある譜面のみ) */
   statPlayCount?: number
   /** 統計: MAX(理論値)達成人数 */
   statMaxCount?: number
+  statSssCount?: number
+  statSsPlusCount?: number
+  statSsCount?: number
+  statSCount?: number
   /** 統計: AJ 達成人数 */
   statAjCount?: number
+  statFcCount?: number
 }
 
 /** 難易度キー。本ツールでは MAS / ULT のみ扱う。 */
@@ -39,6 +44,28 @@ export interface Song {
 export interface AllSongsResponse {
   songs: Song[]
   success: boolean
+  last_updated?: string
+  total_songs?: number
+}
+
+// ===== 譜面動画情報 (musics/chunithm-videos.json) =====
+
+export interface VideoEntry {
+  videoUrl: string
+  videoLengthSec?: number
+}
+
+export interface VideoBundle {
+  /** 譜面保管所 (sdvx.in) の曲 ID */
+  sdvxId: string
+  MAS?: VideoEntry
+  ULT?: VideoEntry
+}
+
+export interface VideosJson {
+  last_updated?: string
+  /** chunirec の楽曲 ID -> 動画情報 */
+  videos: Record<string, VideoBundle>
 }
 
 // ===== ユーザーデータ (chunirec records/showall.json) のレスポンス型 =====
@@ -59,12 +86,14 @@ export interface ShowallResponse {
   [key: string]: unknown
 }
 
-/** proxy がエラーをラップした場合の形 */
-export interface ProxyError {
+/** nurunchu.com API のエラーレスポンス */
+export interface ApiError {
   success: false
+  code?: string
+  error?: string
+  upstream?: 'rec' | 'support'
   upstreamStatus?: number
   upstreamBody?: string
-  error?: string
 }
 
 // ===== 表示・絞り込み用にフラット化した譜面 =====

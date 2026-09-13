@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // nurunchu.com/recplus/* で rec+ を配信する(全体構成は ../nurunchu.com/homepage/docs/DESIGN.md §2)
+  "name": "nurunchu-recplus",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    { "pattern": "nurunchu.com/recplus", "zone_name": "nurunchu.com" },
+    { "pattern": "nurunchu.com/recplus/*", "zone_name": "nurunchu.com" }
+  ],
+  // workers.dev の URL は動作確認用に残す
+  "workers_dev": true
+}

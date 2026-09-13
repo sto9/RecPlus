@@ -18,29 +18,36 @@ ChuniRandomTool のデザイン・絞り込みを参考に、Vue 3 + TypeScript 
 - 該当譜面を **すべて** 表示（100 件ごとにページング）
 - 各行に **譜面保管所（★ → sdvx.in）** と **譜面動画（★ → 動画 URL）** のリンク
 
+## 公開先
+
+https://nurunchu.com/recplus/ （Cloudflare Workers + Static Assets、`wrangler.jsonc`）
+
 ## 開発
 
 ```bash
 npm install
-npm run dev      # 開発サーバ
-npm run build    # 型チェック + 本番ビルド (dist/)
-npm run preview  # ビルド結果のプレビュー
+npm run dev         # 開発サーバ (http://localhost:5173/recplus/)
+npm run test        # ユニットテスト (動画・統計のマージ)
+npm run build       # 型チェック + 本番ビルド (dist/)
+npm run dev:worker  # ビルド結果を Worker 経由で確認 (http://localhost:8787/recplus/)
+npm run deploy      # ビルドして nurunchu.com/recplus/ にデプロイ
 ```
 
 ## 使用 API
 
+nurunchu.com API（ドキュメント: https://nurunchu.com/docs/api/ ）。URL は `src/api.ts` に定義。
+
 | 用途 | エンドポイント |
 |---|---|
-| 全曲取得（chunirec ベース, 動画込み） | `.../exec?gameType=chunithm&includeVideos=true` |
-| ユーザーデータ（chunirec showall プロキシ） | `.../exec?user_name=<ユーザーID>` |
+| 全曲取得（chunirec ベース） | `GET /api/v1/otoge-music/chunithm` |
+| 譜面動画情報 | `GET /api/v1/otoge-music/files/musics/chunithm-videos.json` |
+| 達成人数の統計 | `GET /api/v1/otoge-music/files/stats/records_stat_{mas,ult}_num.csv` |
+| ユーザーデータ（chunirec / chunisupport プロキシ） | `GET /api/v1/chunithm-userdata-proxy?user_name=<ユーザーID>&source=rec\|support` |
 
-URL は `src/api.ts` に定義。
+動画情報と統計は `src/musicData.ts` でクライアント側にマージする（旧 GAS API の `includeVideos` / `stat` 相当）。
+どちらも無い場合は該当列が空になるだけで、一覧表示は動く。
 
-> **注意:** ユーザーデータ用プロキシ（`GAS/ChunirecUserDataProxy`）は、
-> 譜面ごとのスコアを返す `records/showall.json` をプロキシするよう更新済みです。
-> **GAS 側を再デプロイ** すると、達成状況・スコア・未プレイ除外の絞り込みが有効になります。
-> 再デプロイ前は `records/profile.json` を返すため、これらの機能は無効化されます
-> （`records` が無いレスポンスは自動でスコア無効モードにフォールバック）。
+> 旧 GitHub Pages 版（`docs/`）は GAS の API を参照しており、GAS 停止後は動かなくなる。
 
 ## データ仕様メモ
 
